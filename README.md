@@ -1,6 +1,6 @@
 # Quest
 
-A cli for going on http fetch quests. "Quests" are `GET`, `POST`, etc that are configured via a quest file with configurable variables, parameters, and headers which are used to build queries mapped to eacy to remember names.
+A cli for going on a http fetch re-`quest`. "Quests" are `GET`, `POST`, etc that are configured via a quest file with configurable variables, parameters, and headers which are used to build queries mapped to eacy to remember names.
 
 ## Install
 
@@ -11,6 +11,9 @@ cargo install --git git@github.com/theelderbeever/quest.git
 ```
 
 ## Usage
+
+
+### Your Quest should you choose to accept it...
 
 A quest file, `./quests.yaml` by default, might look something like
 
@@ -59,6 +62,8 @@ METHOD  NAME        VARS
 GET     httpbin     path-param
 POST    httpbin     path-param
 ```
+
+### Going on a quest
 
 Now if we perform a `GET` we will see that
 - The url in `quest.yaml` has had `${path-param}` replaced with the value `get` defined in `.methods.get.vars`
@@ -112,4 +117,18 @@ Doing the same with `POST` you can see the same things were done as above as wel
   "origin": "76.155.80.50",
   "url": "https://httpbin.org/post?param1=value&post-param=value"
 }
+```
+
+### On the fly updates to your quest
+
+Variables, Headers, and Params can all be overriden or added to from the command line at runtime. Consider our `GET` quest from before
+
+```
+❯ SUPER_SECRET=keepitsecretkeepissafe quest get httpbin | jq
+```
+
+If we wanted to add an extra param to the ones we already have configured this could be done with the `-p/--param` flag shown below. The same is available for headers `-H/--header` and variables `-v/--var`.
+
+```
+❯ SUPER_SECRET=keepitsecretkeepissafe quest get httpbin --param new-param=new-value | jq
 ```
