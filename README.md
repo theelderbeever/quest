@@ -2,6 +2,16 @@
 
 A cli for going on http fetch quests. "Quests" are `GET`, `POST`, etc that are configured via a quest file with configurable variables, parameters, and headers which are used to build queries mapped to eacy to remember names.
 
+## Install
+
+Install is via `cargo` right now.
+
+```
+cargo install --git git@github.com/theelderbeever/quest.git
+```
+
+## Usage
+
 A quest file, `./quests.yaml` by default, might look something like
 
 ```yaml
