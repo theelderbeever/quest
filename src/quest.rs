@@ -57,11 +57,6 @@ pub struct Quest {
     #[serde(default)]
     params: Vec<ConfiguredValue>,
     methods: BTreeMap<Method, Send>,
-    pub get: Option<Send>,
-    pub put: Option<Send>,
-    pub post: Option<Send>,
-    pub delete: Option<Send>,
-    pub head: Option<Send>,
 }
 
 impl Quest {
@@ -140,6 +135,7 @@ impl Quest {
         params: &[(String, String)],
         headers: &[(String, String)],
     ) -> RequestBuilder {
+        log::debug!("{:?}", self);
         let url = self.url(method, vars);
         log::debug!("{method} {url}");
         let params = self.params(method, params);
@@ -153,7 +149,18 @@ impl Quest {
 
         match method {
             Method::Get => client.get(url),
-            _ => unimplemented!(),
+            Method::Post => {
+                let mut r = client.post(url);
+                if let Some(body) = self.methods.get(method).unwrap().body.clone() {
+                    log::debug!("{:?}", body);
+                    r = r.body(body);
+                }
+                if let Some(json) = self.methods.get(method).unwrap().json.clone() {
+                    log::debug!("{:?}", json);
+                    r = r.json(&json);
+                }
+                r
+            } // _ => unimplemented!(),
         }
     }
 }
@@ -162,20 +169,20 @@ impl Quest {
 #[serde(rename_all = "lowercase")]
 pub enum Method {
     Get,
-    Put,
     Post,
-    Delete,
-    Head,
+    // Put,
+    // Delete,
+    // Head,
 }
 
 impl Method {
     pub fn pretty_string(&self) -> ColoredString {
         match self {
             Self::Get => "GET".green(),
-            Self::Put => "PUT".yellow(),
             Self::Post => "POST".blue(),
-            Self::Delete => "DELETE".red(),
-            Self::Head => "HEAD".purple(),
+            // Self::Put => "PUT".yellow(),
+            // Self::Delete => "DELETE".red(),
+            // Self::Head => "HEAD".purple(),
         }
     }
 }
@@ -192,7 +199,10 @@ pub struct Send {
     pub vars: Vec<ConfiguredValue>,
     pub headers: Vec<ConfiguredValue>,
     pub params: Vec<ConfiguredValue>,
-    body: Option<String>,
+    #[serde(default)]
+    pub body: Option<String>,
+    #[serde(default)]
+    pub json: Option<serde_json::Value>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

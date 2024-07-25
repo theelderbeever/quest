@@ -100,7 +100,7 @@ struct Post {
     #[arg()]
     name: String,
     #[arg(short, long, value_parser = parse_key_val::<String, String>)]
-    var: Vec<String>,
+    var: Vec<(String, String)>,
     #[arg(short = 'H', long, value_parser = parse_key_val::<String, String>)]
     header: Vec<(String, String)>,
     #[arg(short, long, value_parser = parse_key_val::<String, String>)]
@@ -111,8 +111,15 @@ struct Post {
 
 impl Post {
     pub fn run(self, quest: Quest) {
-        println!("{:?}", self);
-        println!("{:?}", quest);
+        println!(
+            "{}",
+            quest
+                .request(&quest::Method::Post, &self.var, &self.param, &self.header)
+                .send()
+                .unwrap()
+                .text()
+                .unwrap()
+        );
     }
 }
 
