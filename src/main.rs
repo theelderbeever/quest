@@ -5,7 +5,7 @@ use std::{fs::File, path::PathBuf};
 
 use clap::{Args, Parser, Subcommand};
 
-use quest::{Quest, QuestFile};
+use quest::QuestFile;
 
 fn main() {
     env_logger::init();
@@ -20,7 +20,7 @@ fn print_version() -> &'static str {
 #[command(name = "quest")]
 #[command(version = print_version(), about = "Cli for all the http quests you may go on.", long_about = None)]
 struct QuestCli {
-    #[arg(short, long, default_value = "./quests.yaml")]
+    #[arg(short, long, default_value = "./.quests")]
     file: PathBuf,
     #[arg(short, long, default_value = "./.env")]
     env: PathBuf,
@@ -39,18 +39,31 @@ impl QuestCli {
         let questfile: QuestFile = serde_yaml::from_reader(f).expect("Could not parse quest file.");
 
         match self.command {
-            Commands::Fetch(args) | Commands::Get(args) => {
+            Commands::Send(SendArgs {
+                name,
+                var,
+                header,
+                param,
+            }) => {
                 let quest = questfile
-                    .retrieve(&args.name)
+                    .retrieve(&name)
                     .expect("Could not find quest with matching name.");
-                args.run(quest)
-            }
+                let url = questfile
+                    .url(quest, var, param)
+                    .expect("Could not construct url");
+                let headers = questfile.headers(quest, header);
+                let client = reqwest::blocking::ClientBuilder::new()
+                    .gzip(true)
+                    .build()
+                    .unwrap();
 
-            Commands::Post(args) => {
-                let quest = questfile
-                    .retrieve(&args.name)
-                    .expect("Could not find quest with matching name.");
-                args.run(quest)
+                let req = client
+                    .request(quest.method.into(), url)
+                    .headers(headers)
+                    .send()
+                    .unwrap();
+
+                println!("{}", req.text().unwrap());
             }
 
             Commands::Ls => {
@@ -63,14 +76,12 @@ impl QuestCli {
 
 #[derive(Clone, Debug, Subcommand)]
 enum Commands {
-    Fetch(Get),
-    Get(Get),
-    Post(Post),
+    Send(SendArgs),
     Ls,
 }
 
 #[derive(Clone, Debug, Args)]
-struct Get {
+struct SendArgs {
     #[arg()]
     name: String,
     #[arg(short, long, value_parser = parse_key_val::<String, String>)]
@@ -79,48 +90,6 @@ struct Get {
     header: Vec<(String, String)>,
     #[arg(short, long, value_parser = parse_key_val::<String, String>)]
     param: Vec<(String, String)>,
-}
-
-impl Get {
-    pub fn run(self, quest: Quest) {
-        println!(
-            "{}",
-            quest
-                .request(&quest::Method::Get, &self.var, &self.param, &self.header)
-                .send()
-                .unwrap()
-                .text()
-                .unwrap()
-        );
-    }
-}
-
-#[derive(Clone, Debug, Args)]
-struct Post {
-    #[arg()]
-    name: String,
-    #[arg(short, long, value_parser = parse_key_val::<String, String>)]
-    var: Vec<(String, String)>,
-    #[arg(short = 'H', long, value_parser = parse_key_val::<String, String>)]
-    header: Vec<(String, String)>,
-    #[arg(short, long, value_parser = parse_key_val::<String, String>)]
-    param: Vec<(String, String)>,
-    #[arg(short, long)]
-    data: Option<String>,
-}
-
-impl Post {
-    pub fn run(self, quest: Quest) {
-        println!(
-            "{}",
-            quest
-                .request(&quest::Method::Post, &self.var, &self.param, &self.header)
-                .send()
-                .unwrap()
-                .text()
-                .unwrap()
-        );
-    }
 }
 
 fn parse_key_val<T, U>(s: &str) -> Result<(T, U), Box<dyn Error + Send + Sync + 'static>>

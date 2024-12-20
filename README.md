@@ -15,7 +15,7 @@ cargo install --git git@github.com/theelderbeever/quest.git
 
 ### Your Quest should you choose to accept it...
 
-A quest file, `./quests.yaml` by default, might look something like
+A quest file, `./.quests` by default, might look something like
 
 ```yaml
 quests:

@@ -1,0 +1,32 @@
+headers:
+  - name: x-secret-key
+    valueFromEnv: SUPER_SECRET
+  - name: hello
+    value: world
+vars: []
+params:
+  - name: param1
+    value: value1
+quests:
+  - name: getHttpBin
+    method: get
+    url: https://httpbin.org/${path-param}
+    headers: []
+    vars:
+      - name: path-param
+        value: get
+    params:
+      - name: get-param
+        value: get-value
+  - name: postHttpBin
+    method: post
+    url: https://httpbin.org/${path-param}
+    headers: []
+    vars:
+      - name: path-param
+        value: post
+    params:
+      - name: post-param
+        value: post-value
+    json: |
+      { "hello": "world" }
