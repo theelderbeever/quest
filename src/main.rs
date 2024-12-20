@@ -44,6 +44,12 @@ impl QuestCli {
                 var,
                 header,
                 param,
+            })
+            | Commands::Go(SendArgs {
+                name,
+                var,
+                header,
+                param,
             }) => {
                 let quest = questfile
                     .retrieve(&name)
@@ -76,6 +82,7 @@ impl QuestCli {
 
 #[derive(Clone, Debug, Subcommand)]
 enum Commands {
+    Go(SendArgs),
     Send(SendArgs),
     Ls,
 }
