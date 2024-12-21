@@ -18,39 +18,39 @@ cargo install --git git@github.com/theelderbeever/quest.git
 A quest file, `./.quests` by default, might look something like
 
 ```yaml
+headers:
+  - name: x-secret-key
+    valueFromEnv: SUPER_SECRET
+  - name: hello
+    value: world
+vars: []
+params:
+  - name: param1
+    value: value1
 quests:
-  - name: httpbin
+  - name: getHttpBin
+    method: get
     url: https://httpbin.org/${path-param}
-    vars: []
-    headers:
-      - key: hello
-        value: world
-      - key: x-secret-key
-        valueFrom:
-          env: SUPER_SECRET
+    headers: []
+    vars:
+      - name: path-param
+        value: get
     params:
-      - key: param1
-        value: value
-    methods:
-      get:
-        vars:
-          - key: path-param
-            value: get
-        params:
-          - key: get-param
-            value: value
-      post:
-        headers:
-          - key: content-type
-            value: application/json
-        vars:
-          - key: path-param
-            value: post
-        params:
-          - key: post-param
-            value: value
-        json: |
-          { "hello": "world" }
+      - name: get-param
+        value: get-value
+  - name: postHttpBin
+    method: post
+    url: https://httpbin.org/${path-param}
+    headers: []
+    vars:
+      - name: path-param
+        value: post
+    params:
+      - name: post-param
+        value: post-value
+    json: |
+      { "hello": "world" }
+
 ```
 
 A quick list shows that I have `GET` and `POST` available for `httpbin` and a var named `path-param` configured.
@@ -72,7 +72,7 @@ Now if we perform a `GET` we will see that
 - The request has been sent and the body returned
 
 ```
-❯ SUPER_SECRET=keepitsecretkeepissafe quest get httpbin | jq
+❯ SUPER_SECRET=keepitsecretkeepissafe quest go getHttpBin | jq
 {
   "args": {
     "get-param": "value",
@@ -94,7 +94,7 @@ Now if we perform a `GET` we will see that
 Doing the same with `POST` you can see the same things were done as above as well as the `json` field was filled in
 
 ```
-❯ SUPER_SECRET=keepitsecretkeepissafe quest post httpbin | jq
+❯ SUPER_SECRET=keepitsecretkeepissafe quest go postHttpBin | jq
 {
   "args": {
     "param1": "value",

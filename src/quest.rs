@@ -144,11 +144,13 @@ pub struct Quest {
     pub method: Method,
     pub url: String,
     #[serde(default)]
-    vars: Vec<ConfiguredKeyValue>,
+    pub vars: Vec<ConfiguredKeyValue>,
     #[serde(default)]
-    headers: Vec<ConfiguredKeyValue>,
+    pub headers: Vec<ConfiguredKeyValue>,
     #[serde(default)]
-    params: Vec<ConfiguredKeyValue>,
+    pub params: Vec<ConfiguredKeyValue>,
+    pub json: Option<String>,
+    pub body: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, PartialOrd, Eq, Ord)]
