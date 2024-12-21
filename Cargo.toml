@@ -1,7 +1,11 @@
 [package]
-name = "quest"
+name = "quest-cli"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "quest"      # This will be the name of the installed binary
+path = "src/main.rs"
 
 [dependencies]
 ahash = { version = "0.8", features = ["serde"] }
